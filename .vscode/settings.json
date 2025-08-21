@@ -4,8 +4,6 @@
     "langchain",
     "langsmith",
     "opencanvas",
-    "Signup",
-    "sourounding",
-    "Supabase"
+    "Signup"
   ]
 }
