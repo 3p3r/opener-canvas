@@ -1,4 +1,3 @@
-import { FireCrawlLoader } from "@langchain/community/document_loaders/web/firecrawl";
 import { HumanMessage } from "@langchain/core/messages";
 import { initChatModel } from "langchain/chat_models/universal";
 import { traceable } from "langsmith/traceable";
@@ -30,18 +29,9 @@ const schema = z
 async function fetchUrlContentsFunc(
   url: string
 ): Promise<{ url: string; pageContent: string }> {
-  const loader = new FireCrawlLoader({
-    url,
-    mode: "scrape",
-    params: {
-      formats: ["markdown"],
-    },
-  });
-
-  const docs = await loader.load();
   return {
     url,
-    pageContent: docs[0]?.pageContent || "",
+    pageContent: "not implemented",
   };
 }
 const fetchUrlContents = traceable(fetchUrlContentsFunc, {

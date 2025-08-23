@@ -22,12 +22,10 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { TighterText } from "@/components/ui/header";
 import { GraphInput } from "@opencanvas/shared/types";
-import { User } from "@supabase/supabase-js";
 
 export interface CustomQuickActionsProps {
   isTextSelected: boolean;
   assistantId: string | undefined;
-  user: User | undefined;
   streamMessage: (params: GraphInput) => Promise<void>;
 }
 
@@ -82,7 +80,7 @@ const DropdownMenuItemWithDelete = ({
 };
 
 export function CustomQuickActions(props: CustomQuickActionsProps) {
-  const { user, assistantId, streamMessage } = props;
+  const { assistantId, streamMessage } = props;
   const {
     getCustomQuickActions,
     deleteCustomQuickAction,
@@ -108,9 +106,9 @@ export function CustomQuickActions(props: CustomQuickActionsProps) {
   };
 
   useEffect(() => {
-    if (typeof window === undefined || !assistantId || !user) return;
-    getAndSetCustomQuickActions(user.id);
-  }, [assistantId, user]);
+    if (typeof window === undefined || !assistantId) return;
+    getAndSetCustomQuickActions("anonymousUser");
+  }, [assistantId]);
 
   const handleNewActionClick = (e: Event) => {
     e.preventDefault();
@@ -130,20 +128,11 @@ export function CustomQuickActions(props: CustomQuickActionsProps) {
   };
 
   const handleDelete = async (id: string) => {
-    if (!user) {
-      toast({
-        title: "Failed to delete",
-        description: "User not found",
-        variant: "destructive",
-        duration: 5000,
-      });
-      return;
-    }
     try {
       const deletionSuccess = await deleteCustomQuickAction(
         id,
         customQuickActions || [],
-        user.id
+        "anonymousUser"
       );
       if (deletionSuccess) {
         toast({
@@ -240,7 +229,6 @@ export function CustomQuickActions(props: CustomQuickActionsProps) {
         </DropdownMenuItem>
       </DropdownMenuContent>
       <NewCustomQuickActionDialog
-        user={user}
         allQuickActions={customQuickActions || []}
         isEditing={isEditing}
         open={dialogOpen}

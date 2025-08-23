@@ -1,5 +1,4 @@
 import { useGraphContext } from "@/contexts/GraphContext";
-import { useToast } from "@/hooks/use-toast";
 import { ProgrammingLanguageOptions } from "@opencanvas/shared/types";
 import { ThreadPrimitive } from "@assistant-ui/react";
 import { Thread as ThreadType } from "@langchain/langgraph-sdk";
@@ -14,7 +13,6 @@ import { AssistantMessage, UserMessage } from "./messages";
 import ModelSelector from "./model-selector";
 import { ThreadHistory } from "./thread-history";
 import { ThreadWelcome } from "./welcome";
-import { useUserContext } from "@/contexts/UserContext";
 import { useThreadContext } from "@/contexts/ThreadProvider";
 import { useAssistantContext } from "@/contexts/AssistantContext";
 
@@ -52,7 +50,6 @@ export const Thread: FC<ThreadProps> = (props: ThreadProps) => {
     handleQuickStart,
     switchSelectedThreadCallback,
   } = props;
-  const { toast } = useToast();
   const {
     graphData: { clearState, runId, feedbackSubmitted, setFeedbackSubmitted },
   } = useGraphContext();
@@ -65,22 +62,11 @@ export const Thread: FC<ThreadProps> = (props: ThreadProps) => {
     modelConfigs,
     setThreadId,
   } = useThreadContext();
-  const { user } = useUserContext();
 
   // Render the LangSmith trace link
   useLangSmithLinkToolUI();
 
   const handleNewSession = async () => {
-    if (!user) {
-      toast({
-        title: "User not found",
-        description: "Failed to create thread without user",
-        duration: 5000,
-        variant: "destructive",
-      });
-      return;
-    }
-
     // Remove the threadId param from the URL
     setThreadId(null);
 

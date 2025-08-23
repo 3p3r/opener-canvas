@@ -36,15 +36,8 @@ Open Canvas requires the following API keys and external services:
 - [OpenAI API key](https://platform.openai.com/signup/)
 - [Anthropic API key](https://console.anthropic.com/)
 - (optional) [Google GenAI API key](https://aistudio.google.com/apikey)
-- (optional) [Fireworks AI API key](https://fireworks.ai/login)
-- (optional) [Groq AI API key](https://groq.com) - audio/video transcription
-- (optional) [FireCrawl API key](https://firecrawl.dev) - web scraping
 - (optional) [ExaSearch API key](https://exa.ai) - web search
 
-
-#### Authentication
-
-- [Supabase](https://supabase.com/) account for authentication
 
 #### LangGraph Server
 
@@ -81,21 +74,6 @@ cp .env.example .env
 cd apps/web/
 cp .env.example .env
 ```
-
-Then, setup authentication with Supabase.
-
-### Setup Authentication
-
-After creating a Supabase account, visit your [dashboard](https://supabase.com/dashboard/projects) and create a new project.
-
-Next, navigate to the `Project Settings` page inside your project, and then to the `API` tag. Copy the `Project URL`, and `anon public` project API key. Paste them into the `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` environment variables in the `apps/web/.env` file.
-
-After this, navigate to the `Authentication` page, and the `Providers` tab. Make sure `Email` is enabled (also ensure you've enabled `Confirm Email`). You may also enable `GitHub`, and/or `Google` if you'd like to use those for authentication. (see these pages for documentation on how to setup each provider: [GitHub](https://supabase.com/docs/guides/auth/social-login/auth-github), [Google](https://supabase.com/docs/guides/auth/social-login/auth-google))
-
-#### Test authentication
-
-To verify authentication works, run `yarn dev` and visit [localhost:3000](http://localhost:3000). This should redirect you to the [login page](http://localhost:3000/auth/login). From here, you can either login with Google or GitHub, or if you did not configure these providers, navigate to the [signup page](http://localhost:3000/auth/signup) and create a new account with an email and password. This should then redirect you to a conformation page, and after confirming your email you should be redirected to the [home page](http://localhost:3000).
-
 ### Setup LangGraph Server
 
 The first step to running Open Canvas locally is to build the application. This is because Open Canvas uses a monorepo setup, and requires workspace dependencies to be build so other packages/apps can access them.
@@ -131,7 +109,6 @@ Then, open [localhost:3000](http://localhost:3000) with your browser and start i
 Open Canvas is designed to be compatible with any LLM model. The current deployment has the following models configured:
 
 - **Anthropic Claude 3 Haiku 👤**: Haiku is Anthropic's fastest model, great for quick tasks like making edits to your document. Sign up for an Anthropic account [here](https://console.anthropic.com/).
-- **Fireworks Llama 3 70B 🦙**: Llama 3 is a SOTA open source model from Meta, powered by [Fireworks AI](https://fireworks.ai/). You can sign up for an account [here](https://fireworks.ai/login).
 - **OpenAI GPT 4o Mini 💨**: GPT 4o Mini is OpenAI's newest, smallest model. You can sign up for an API key [here](https://platform.openai.com/signup/).
 
 If you'd like to add a new model, follow these simple steps:

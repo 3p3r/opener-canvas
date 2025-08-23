@@ -8,7 +8,6 @@ import { CustomModelConfig } from "@opencanvas/shared/types";
 import { Thread } from "@langchain/langgraph-sdk";
 import { createClient } from "../hooks/utils";
 import { createContext, ReactNode, useContext, useMemo, useState } from "react";
-import { useUserContext } from "./UserContext";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryState } from "nuqs";
 
@@ -35,7 +34,7 @@ type ThreadContentType = {
 const ThreadContext = createContext<ThreadContentType | undefined>(undefined);
 
 export function ThreadProvider({ children }: { children: ReactNode }) {
-  const { user } = useUserContext();
+  const { user } = { user: { id: "anonymousUser" } };
   const { toast } = useToast();
   const [threadId, setThreadId] = useQueryState("threadId");
   const [userThreads, setUserThreads] = useState<Thread[]>([]);
@@ -64,18 +63,6 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
         maxTokens: {
           ...(model.config.maxTokens || DEFAULT_MODEL_CONFIG.maxTokens),
         },
-        ...(model.config.provider === "azure_openai" && {
-          azureConfig: {
-            azureOpenAIApiKey: process.env._AZURE_OPENAI_API_KEY || "",
-            azureOpenAIApiInstanceName:
-              process.env._AZURE_OPENAI_API_INSTANCE_NAME || "",
-            azureOpenAIApiDeploymentName:
-              process.env._AZURE_OPENAI_API_DEPLOYMENT_NAME || "",
-            azureOpenAIApiVersion:
-              process.env._AZURE_OPENAI_API_VERSION || "2024-08-01-preview",
-            azureOpenAIBasePath: process.env._AZURE_OPENAI_API_BASE_PATH,
-          },
-        }),
       };
     });
     return initialConfigs;
@@ -108,29 +95,6 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
           maxTokens: {
             ...(config.maxTokens || DEFAULT_MODEL_CONFIG.maxTokens),
           },
-          ...(config.provider === "azure_openai" && {
-            azureConfig: {
-              ...config.azureConfig,
-              azureOpenAIApiKey:
-                config.azureConfig?.azureOpenAIApiKey ||
-                process.env._AZURE_OPENAI_API_KEY ||
-                "",
-              azureOpenAIApiInstanceName:
-                config.azureConfig?.azureOpenAIApiInstanceName ||
-                process.env._AZURE_OPENAI_API_INSTANCE_NAME ||
-                "",
-              azureOpenAIApiDeploymentName:
-                config.azureConfig?.azureOpenAIApiDeploymentName ||
-                process.env._AZURE_OPENAI_API_DEPLOYMENT_NAME ||
-                "",
-              azureOpenAIApiVersion:
-                config.azureConfig?.azureOpenAIApiVersion ||
-                "2024-08-01-preview",
-              azureOpenAIBasePath:
-                config.azureConfig?.azureOpenAIBasePath ||
-                process.env._AZURE_OPENAI_API_BASE_PATH,
-            },
-          }),
         },
       };
     });
@@ -152,15 +116,9 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
     try {
       const thread = await client.threads.create({
         metadata: {
-          supabase_user_id: user.id,
+          open_canvas_user_id: user.id,
           customModelName: modelName,
-          modelConfig: {
-            ...modelConfig,
-            // Ensure Azure config is included if needed
-            ...(modelConfig.provider === "azure_openai" && {
-              azureConfig: modelConfig.azureConfig,
-            }),
-          },
+          modelConfig,
         },
       });
 
@@ -200,7 +158,7 @@ export function ThreadProvider({ children }: { children: ReactNode }) {
 
       const userThreads = await client.threads.search({
         metadata: {
-          supabase_user_id: user.id,
+          open_canvas_user_id: user.id,
         },
         limit: 100,
       });

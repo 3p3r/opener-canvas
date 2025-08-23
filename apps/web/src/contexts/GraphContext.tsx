@@ -1,5 +1,4 @@
 import { v4 as uuidv4 } from "uuid";
-import { useUserContext } from "@/contexts/UserContext";
 import {
   isArtifactCodeContent,
   isArtifactMarkdownContent,
@@ -114,7 +113,7 @@ function extractStreamDataOutput(output: any) {
 }
 
 export function GraphProvider({ children }: { children: ReactNode }) {
-  const userData = useUserContext();
+  const userData = { user: { id: "anonymousUser" } };
   const assistantsData = useAssistantContext();
   const threadData = useThreadContext();
   const { toast } = useToast();

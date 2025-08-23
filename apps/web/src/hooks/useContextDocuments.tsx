@@ -28,6 +28,7 @@ export function useContextDocuments(userId: string) {
     urls: string[]
   ): Promise<ContextDocument[]> => {
     try {
+      // todo: implement this ?
       const results = await fetch("/api/firecrawl/scrape", {
         method: "POST",
         body: JSON.stringify({ urls }),

@@ -26,7 +26,6 @@ import {
   TEMPERATURE_EXCLUDED_MODELS,
   LANGCHAIN_USER_ONLY_MODELS,
 } from "@opencanvas/shared/models";
-import { createClient, Session, User } from "@supabase/supabase-js";
 
 export const formatReflections = (
   reflections: Reflections,
@@ -168,13 +167,6 @@ export const getModelConfig = (
   modelName: string;
   modelProvider: string;
   modelConfig?: CustomModelConfig;
-  azureConfig?: {
-    azureOpenAIApiKey: string;
-    azureOpenAIApiInstanceName: string;
-    azureOpenAIApiDeploymentName: string;
-    azureOpenAIApiVersion: string;
-    azureOpenAIBasePath?: string;
-  };
   apiKey?: string;
   baseUrl?: string;
 } => {
@@ -182,28 +174,6 @@ export const getModelConfig = (
   if (!customModelName) throw new Error("Model name is missing in config.");
 
   const modelConfig = config.configurable?.modelConfig as CustomModelConfig;
-
-  if (customModelName.startsWith("azure/")) {
-    let actualModelName = customModelName.replace("azure/", "");
-    if (extra?.isToolCalling && actualModelName.includes("o1")) {
-      // Fallback to 4o model for tool calling since o1 does not support tools.
-      actualModelName = "gpt-4o";
-    }
-    return {
-      modelName: actualModelName,
-      modelProvider: "azure_openai",
-      azureConfig: {
-        azureOpenAIApiKey: process.env._AZURE_OPENAI_API_KEY || "",
-        azureOpenAIApiInstanceName:
-          process.env._AZURE_OPENAI_API_INSTANCE_NAME || "",
-        azureOpenAIApiDeploymentName:
-          process.env._AZURE_OPENAI_API_DEPLOYMENT_NAME || "",
-        azureOpenAIApiVersion:
-          process.env._AZURE_OPENAI_API_VERSION || "2024-08-01-preview",
-        azureOpenAIBasePath: process.env._AZURE_OPENAI_API_BASE_PATH,
-      },
-    };
-  }
 
   const providerConfig = {
     modelName: customModelName,
@@ -236,59 +206,6 @@ export const getModelConfig = (
     };
   }
 
-  if (customModelName.includes("fireworks/")) {
-    let actualModelName = providerConfig.modelName;
-    if (
-      extra?.isToolCalling &&
-      actualModelName !== "accounts/fireworks/models/llama-v3p3-70b-instruct"
-    ) {
-      actualModelName = "accounts/fireworks/models/llama-v3p3-70b-instruct";
-    }
-    return {
-      ...providerConfig,
-      modelName: actualModelName,
-      modelProvider: "fireworks",
-      apiKey: process.env.FIREWORKS_API_KEY,
-    };
-  }
-
-  if (customModelName.startsWith("groq/")) {
-    const actualModelName = customModelName.replace("groq/", "");
-    return {
-      modelName: actualModelName,
-      modelProvider: "groq",
-      apiKey: process.env.GROQ_API_KEY,
-    };
-  }
-
-  if (customModelName.includes("gemini-")) {
-    let actualModelName = providerConfig.modelName;
-    if (extra?.isToolCalling && actualModelName.includes("thinking")) {
-      // Gemini thinking does not support tools.
-      actualModelName = "gemini-2.0-flash-exp";
-    }
-    return {
-      ...providerConfig,
-      modelName: actualModelName,
-      modelProvider: "google-genai",
-      apiKey: process.env.GOOGLE_API_KEY,
-    };
-  }
-
-  if (customModelName.includes("gemini-")) {
-    let actualModelName = providerConfig.modelName;
-    if (extra?.isToolCalling && actualModelName.includes("thinking")) {
-      // Gemini thinking does not support tools.
-      actualModelName = "gemini-2.0-flash-exp";
-    }
-    return {
-      ...providerConfig,
-      modelName: actualModelName,
-      modelProvider: "google-genai",
-      apiKey: process.env.GOOGLE_API_KEY,
-    };
-  }
-
   if (customModelName.startsWith("ollama-")) {
     return {
       modelName: customModelName.replace("ollama-", ""),
@@ -308,29 +225,10 @@ export function optionallyGetSystemPromptFromConfig(
 }
 
 async function getUserFromConfig(
-  config: LangGraphRunnableConfig
-): Promise<User | undefined> {
-  if (
-    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    !process.env.SUPABASE_SERVICE_ROLE
-  ) {
-    return undefined;
-  }
-
-  const accessToken = (
-    config.configurable?.supabase_session as Session | undefined
-  )?.access_token;
-  if (!accessToken) {
-    return undefined;
-  }
-
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE
-  );
-
-  const authRes = await supabase.auth.getUser(accessToken);
-  return authRes.data.user || undefined;
+  _config: LangGraphRunnableConfig
+): Promise<{ email: string } | undefined> {
+  // todo: implement this
+  return undefined;
 }
 
 export function isUsingO1MiniModel(config: LangGraphRunnableConfig) {
@@ -349,7 +247,6 @@ export async function getModelFromConfig(
   const {
     modelName,
     modelProvider,
-    azureConfig,
     apiKey,
     baseUrl,
     modelConfig,
@@ -395,16 +292,6 @@ export async function getModelFromConfig(
         }),
     ...(baseUrl ? { baseUrl } : {}),
     ...(apiKey ? { apiKey } : {}),
-    ...(azureConfig != null
-      ? {
-          azureOpenAIApiKey: azureConfig.azureOpenAIApiKey,
-          azureOpenAIApiInstanceName: azureConfig.azureOpenAIApiInstanceName,
-          azureOpenAIApiDeploymentName:
-            azureConfig.azureOpenAIApiDeploymentName,
-          azureOpenAIApiVersion: azureConfig.azureOpenAIApiVersion,
-          azureOpenAIBasePath: azureConfig.azureOpenAIBasePath,
-        }
-      : {}),
   });
 }
 
